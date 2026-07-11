@@ -294,12 +294,6 @@ Jawaharlal Nehru New College of Engineering (JNNCE)
 
 ---
 
-# 📄 License
-
-This project is licensed under the MIT License.
-
----
-
 ## ⭐ If you found this project interesting, consider giving it a Star!
 
 
