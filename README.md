@@ -1,6 +1,8 @@
 # 🏟️ StadiumSync AI – FIFA World Cup 2026
 
 > An AI-powered, accessibility-first smart stadium platform built for the Google Build with AI – PromptWars Challenge.
+> 
+> 🌐 **Live Demo:** [stadium-sync-ai-assistant-7ntq.vercel.app](https://stadium-sync-ai-assistant-7ntq.vercel.app/)
 
 StadiumSync AI is a modern Progressive Web Application (PWA) designed to improve the FIFA World Cup 2026 stadium experience for fans, organizers, elderly visitors, and people with disabilities. Powered by Google Gemini AI, the platform provides intelligent assistance, accessibility-focused navigation, real-time crowd insights, and venue information in a simple, mobile-friendly interface.
 
