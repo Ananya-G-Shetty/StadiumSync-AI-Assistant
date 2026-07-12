@@ -238,6 +238,7 @@ http://localhost:3000
 - Modern responsive interface
 - Production-ready architecture
 
+
 ---
 
 # 🔒 Security
@@ -272,6 +273,31 @@ http://localhost:3000
 
 ---
 
+# 🧠 Submission Details
+
+## 🎯 Chosen Vertical
+**Smart Stadiums & Tournament Operations** (FIFA World Cup 2026 Accessibility Focus)
+- Designed to empower elderly fans, fans with physical or sensory disabilities, and international travelers navigating large-scale tournament venues.
+
+## 🛠️ Approach & Logic
+1. **Accessibility-First Design**: Fully integrated WCAG 2.1 guidelines (High Contrast Mode, dynamic Text Scaling, Screen Reader descriptive announcements, and Keyboard-friendly navigation).
+2. **Context-Aware AI Assistant**: Uses the **Vercel AI SDK** with **Google Gemini 1.5 Flash** for dynamic, natural language guidance. It extracts the live database status of stadium amenities, warning users of any maintenance issues (e.g., closed escalators/elevators) and routing them to operational alternatives.
+3. **Database & Persistence**: Mocked PostgreSQL relational tables mapped via **Drizzle ORM** with simulated in-memory and local JSON persistence (`db-store.json`) for seamless stateless deployment.
+4. **Resilient Offline/Fallback Logic**: If the Gemini API key is missing or invalid, the app switches to an intelligent fallback rules-engine that mimics natural speech, parses multilingual keywords, and queries the database dynamically to generate complete responses.
+
+## ⚙️ How the Solution Works
+1. **Stadium Selection**: Users select their stadium (e.g., MetLife Stadium, SoFi Stadium, Estadio Azteca) which loads stadium-specific matches, wait times, weather, and amenities.
+2. **Interactive Map Navigation**: The map visualizes seating levels and lets users filter gates, elevators, quiet sensory rooms, first aid, and accessible restrooms.
+3. **Multilingual AI Support**: Chat bot auto-detects Spanish, French, and English and replies in the user's language.
+4. **Live Incident Reporting**: Fans can submit access-related incidents (e.g., wet floor, broken ramp). These issues are dispatched to operations staff and display in the live feed.
+
+## 📌 Assumptions Made
+1. **API Keys**: A `GEMINI_API_KEY` (or `GOOGLE_GENERATIVE_AI_API_KEY`) is supplied in the environment. If not present, the system defaults to the mock AI rules-engine to maintain usability.
+2. **Stateless Operations**: Local file modifications in Next.js Server Actions are transient on serverless environments (like Vercel). The app is architected to fallback gracefully to memory arrays if file writes fail.
+3. **Telemetry data**: Gate queue wait times, weather details, and crowd flow indices are simulated in real-time.
+
+---
+
 # 🏆 Google Build with AI – PromptWars
 
 This project was developed as part of the **Google Build with AI – PromptWars Challenge 4**.
@@ -294,6 +320,11 @@ Jawaharlal Nehru New College of Engineering (JNNCE)
 
 ---
 
-## ⭐ If you found this project interesting, consider giving it a Star!
+# 📄 License
 
+This project is licensed under the MIT License.
+
+---
+
+## ⭐ If you found this project interesting, consider giving it a Star!
 
