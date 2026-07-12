@@ -95,7 +95,14 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     localStorage.setItem('splang', speechLanguage);
   }, [speechLanguage]);
 
-  const speak = (text: string) => {
+  // Declare helper functions first (hoisted)
+  function stopSpeaking() {
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+    }
+  }
+
+  function speak(text: string) {
     if (!readAloud || typeof window === 'undefined' || !window.speechSynthesis) return;
 
     // Stop current speech
@@ -128,21 +135,15 @@ export const AccessibilityProvider: React.FC<{ children: React.ReactNode }> = ({
     }
 
     window.speechSynthesis.speak(utterance);
-  };
+  }
 
-  const stopSpeaking = () => {
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
-  };
-
-  const announceToScreenReader = (text: string) => {
+  function announceToScreenReader(text: string) {
     setSrAnnouncement(text);
     // Clear after announcement to allow re-announcement of same text if needed
     setTimeout(() => {
       setSrAnnouncement((curr) => (curr === text ? '' : curr));
     }, 3000);
-  };
+  }
 
   return (
     <AccessibilityContext.Provider
