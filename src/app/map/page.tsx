@@ -331,16 +331,8 @@ function MapContent() {
           <span className="text-xs text-muted-foreground font-semibold">Venue: {venueName}</span>
         </div>
 
-        {/* Level Controls & Live status */}
+        {/* Level Controls */}
         <div className="flex items-center gap-3 self-end sm:self-auto">
-          <div className="text-right text-[10px] text-muted-foreground font-bold mr-2 hidden md:block">
-            <div className="text-success flex items-center gap-1 justify-end">
-              <span className="h-2 w-2 rounded-full bg-success animate-pulse" />
-              Live Update
-            </div>
-            <span>May 11, 2026 • 07:45 PM</span>
-          </div>
-
           <div className="flex gap-1.5 p-1 bg-slate-950/80 border border-slate-800 rounded-xl" role="group">
             {[1, 2, 3].map((lvl) => (
               <button
