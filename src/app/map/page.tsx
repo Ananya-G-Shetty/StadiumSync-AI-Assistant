@@ -464,8 +464,17 @@ function MapContent() {
                   <path
                     key={sec.id}
                     d={getWedgePath(sec.r1, sec.r2, sec.startAngle, sec.endAngle)}
-                    className={`transition-colors duration-200 ${getWedgeColor(sec.density, sec.id)}`}
+                    className={`transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary ${getWedgeColor(sec.density, sec.id)}`}
                     onClick={() => handleSectionClick(sec)}
+                    tabIndex={0}
+                    role="button"
+                    aria-label={`Section ${sec.label}, Level ${sec.level}. Occupancy: ${sec.occupancy}%. ${sec.accessibility}`}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleSectionClick(sec);
+                      }
+                    }}
                   />
                 ))}
               </g>
@@ -549,16 +558,36 @@ function MapContent() {
                   const isMaintenance = m.status === 'maintenance';
                   const isTransit = m.type === 'transit';
                   return (
-                    <g key={m.id} className="cursor-pointer" onClick={() => {
-                      if (isTransit) {
-                        setSelectedTransit(m);
-                        setSelectedSection(null);
-                      } else {
-                        setSelectedTransit(null);
-                      }
-                      speak(`${m.name}. ${m.details}`);
-                      announceToScreenReader(`${m.name}: ${m.details}`);
-                    }}>
+                    <g 
+                      key={m.id} 
+                      className="cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary" 
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`${m.name}: ${m.details}. Status: ${m.status}`}
+                      onClick={() => {
+                        if (isTransit) {
+                          setSelectedTransit(m);
+                          setSelectedSection(null);
+                        } else {
+                          setSelectedTransit(null);
+                        }
+                        speak(`${m.name}. ${m.details}`);
+                        announceToScreenReader(`${m.name}: ${m.details}`);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          if (isTransit) {
+                            setSelectedTransit(m);
+                            setSelectedSection(null);
+                          } else {
+                            setSelectedTransit(null);
+                          }
+                          speak(`${m.name}. ${m.details}`);
+                          announceToScreenReader(`${m.name}: ${m.details}`);
+                        }
+                      }}
+                    >
                       <circle cx={m.cx} cy={m.cy} r="14" fill={isMaintenance ? 'rgba(239,68,68,0.25)' : isTransit ? 'rgba(79,70,229,0.25)' : 'rgba(14,165,233,0.2)'} className="animate-pulse" />
                       <circle cx={m.cx} cy={m.cy} r="10" fill={isMaintenance ? 'var(--danger)' : 'var(--card)'} stroke={isMaintenance ? '#f43f5e' : isTransit ? '#4f46e5' : '#0ea5e9'} strokeWidth="1.5" />
                       <text x={m.cx} y={m.cy + 3} textAnchor="middle" className="text-[10px]">

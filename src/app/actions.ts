@@ -34,17 +34,29 @@ export async function getActiveWaitTimes(venueId: string) {
   return results;
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 export async function reportIssue(venueId: string, category: string, location: string, description: string) {
   if (!venueId || !category || !location || !description) {
     return { success: false, error: 'All fields are required.' };
   }
 
   try {
+    const safeLocation = escapeHtml(location.trim());
+    const safeDescription = escapeHtml(description.trim());
+
     await db.insert(userFeedback).values({
       venueId,
       category,
-      location,
-      description,
+      location: safeLocation,
+      description: safeDescription,
       status: 'pending',
     });
 
@@ -56,6 +68,20 @@ export async function reportIssue(venueId: string, category: string, location: s
   }
 }
 
+export async function updateWaitTime(amenityId: number, nextWait: number) {
+  try {
+    await db.update(waitTimes)
+      .set({ wait_time_minutes: nextWait })
+      .where(eq(waitTimes.amenityId, amenityId));
+
+    revalidatePath('/');
+    return { success: true };
+  } catch (err: any) {
+    console.error('Error updating wait time:', err);
+    return { success: false, error: err.message || 'Database error.' };
+  }
+}
+
 export async function getRecentFeedback(venueId: string) {
   return await db.select()
     .from(userFeedback)
@@ -63,3 +89,4 @@ export async function getRecentFeedback(venueId: string) {
     .orderBy(desc(userFeedback.reportedAt))
     .limit(5);
 }
+

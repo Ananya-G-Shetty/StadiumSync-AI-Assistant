@@ -274,6 +274,52 @@ class InsertBuilder {
   }
 }
 
+// Drizzle mock update builder
+class UpdateBuilder {
+  private filterFn: ((item: any) => boolean) | null = null;
+  private tableData: any[] = [];
+
+  constructor(private table: any) {
+    if (this.table === schema.venues) this.tableData = venuesData;
+    else if (this.table === schema.amenities) this.tableData = amenitiesData;
+    else if (this.table === schema.matches) this.tableData = matchesData;
+    else if (this.table === schema.waitTimes) this.tableData = waitTimesData;
+    else if (this.table === schema.userFeedback) this.tableData = userFeedbackData;
+  }
+
+  set(values: any) {
+    return {
+      where: (condition: any) => {
+        this.filterFn = (item) => matchCondition(item, condition);
+        this.tableData.forEach((item) => {
+          if (this.filterFn && this.filterFn(item)) {
+            Object.keys(values).forEach((key) => {
+              // Map DB wait_time_minutes to schema JS waitTimeMinutes
+              const jsKey = key === 'wait_time_minutes' ? 'waitTimeMinutes' : key;
+              item[jsKey] = values[key];
+            });
+          }
+        });
+        saveDbToFile();
+        return {
+          returning: () => this.tableData,
+          then: (onfulfilled: any) => Promise.resolve(this.tableData).then(onfulfilled),
+        };
+      },
+      then: (onfulfilled: any) => {
+        this.tableData.forEach((item) => {
+          Object.keys(values).forEach((key) => {
+            const jsKey = key === 'wait_time_minutes' ? 'waitTimeMinutes' : key;
+            item[jsKey] = values[key];
+          });
+        });
+        saveDbToFile();
+        return Promise.resolve(this.tableData).then(onfulfilled);
+      }
+    };
+  }
+}
+
 // Initialize seed data if database is empty
 if (venuesData.length === 0 && process.env.NEXT_PHASE !== 'phase-production-build') {
   console.log('Database empty on start. Running mock-DB seeder...');
@@ -282,6 +328,7 @@ if (venuesData.length === 0 && process.env.NEXT_PHASE !== 'phase-production-buil
   const mockDbClient = {
     select: (fields?: any) => new QueryBuilder(fields),
     insert: (table: any) => new InsertBuilder(table),
+    update: (table: any) => new UpdateBuilder(table),
   } as any;
   
   seedDatabase(mockDbClient).catch((err) => {
@@ -293,6 +340,8 @@ if (venuesData.length === 0 && process.env.NEXT_PHASE !== 'phase-production-buil
 export const db = {
   select: (fields?: any) => new QueryBuilder(fields),
   insert: (table: any) => new InsertBuilder(table),
+  update: (table: any) => new UpdateBuilder(table),
 } as any;
 
 export const pglite = {} as any;
+

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getActiveWaitTimes } from '@/app/actions';
+import { getActiveWaitTimes, updateWaitTime } from '@/app/actions';
 import { 
   Search, 
   Filter, 
@@ -67,26 +67,42 @@ export default function AmenitiesPage() {
     loadData();
   }, []);
 
-  // Fluctuate wait times slightly in real-time to simulate live operations
+  // Fluctuate wait times slightly in real-time to simulate live operations and update DB
   useEffect(() => {
     if (rawAmenities.length === 0) return;
 
     const interval = setInterval(() => {
-      setRawAmenities(curr => 
-        curr.map(item => {
-          if (item.waitTimeMinutes !== null && (item.type === 'food' || item.type === 'restroom')) {
-            // Random shift by -1, 0, or +1 minute (clamped between 2 and 30)
-            const shift = Math.floor(Math.random() * 3) - 1;
-            const nextWait = Math.max(2, Math.min(30, item.waitTimeMinutes + shift));
-            return { ...item, waitTimeMinutes: nextWait };
+      rawAmenities.forEach(async (item) => {
+        if (item.waitTimeMinutes !== null && (item.type === 'food' || item.type === 'restroom')) {
+          // Random shift by -1, 0, or +1 minute (clamped between 2 and 30)
+          const shift = Math.floor(Math.random() * 3) - 1;
+          const nextWait = Math.max(2, Math.min(30, item.waitTimeMinutes + shift));
+          
+          if (nextWait !== item.waitTimeMinutes) {
+            // Call server action to update waitTimeMinutes in database
+            await updateWaitTime(item.amenityId, nextWait);
           }
-          return item;
-        })
-      );
+        }
+      });
+
+      // Reload wait times from DB to update client UI reactively
+      const refreshData = async () => {
+        try {
+          const data = await getActiveWaitTimes(selectedVenueId);
+          const formatted = data.map((item: any) => ({
+            ...item,
+            updatedAt: item.updatedAt ? new Date(item.updatedAt) : null
+          })) as AmenityWaitTime[];
+          setRawAmenities(formatted);
+        } catch (err) {
+          console.error('Error refreshing wait times:', err);
+        }
+      };
+      refreshData();
     }, 15000); // Shift every 15s
 
     return () => clearInterval(interval);
-  }, [rawAmenities]);
+  }, [rawAmenities, selectedVenueId]);
 
   // Apply filters whenever search, category, or accessibility toggles change
   useEffect(() => {
