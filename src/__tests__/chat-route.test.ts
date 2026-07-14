@@ -1,10 +1,22 @@
 import { describe, it, expect, vi } from 'vitest';
 import { POST } from '../app/api/chat/route';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { streamText } from 'ai';
 
 // Mock next/cache
 vi.mock('next/cache', () => ({
   revalidatePath: vi.fn(),
 }));
+
+// Mock AI SDK modules
+vi.mock('@ai-sdk/google', () => ({
+  createGoogleGenerativeAI: vi.fn(),
+}));
+
+vi.mock('ai', () => ({
+  streamText: vi.fn(),
+}));
+
 
 describe('Chat API Route (/api/chat)', () => {
   
@@ -114,4 +126,46 @@ describe('Chat API Route (/api/chat)', () => {
     expect(streamText).toContain('Toilettes');
   });
 
+  it('should call streamText with correct model and prompts when API key is present', async () => {
+    process.env.GEMINI_API_KEY = 'mock-api-key';
+
+    const mockModel = { id: 'mock-model' };
+    const mockGoogle = vi.fn().mockReturnValue(mockModel);
+    
+    vi.mocked(createGoogleGenerativeAI).mockReturnValue(mockGoogle as any);
+
+    const mockStreamResult = {
+      toUIMessageStreamResponse: () => new Response('mock-stream-response'),
+    };
+    vi.mocked(streamText).mockResolvedValue(mockStreamResult as any);
+
+    const req = new Request('http://localhost/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: 'hello' }],
+        venueId: 'metlife-stadium',
+      }),
+    });
+
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    const text = await res.text();
+    expect(text).toBe('mock-stream-response');
+
+    expect(createGoogleGenerativeAI).toHaveBeenCalledWith({ apiKey: 'mock-api-key' });
+    expect(mockGoogle).toHaveBeenCalledWith('gemini-1.5-flash');
+
+    expect(streamText).toHaveBeenCalled();
+    const streamArgs = vi.mocked(streamText).mock.calls[0][0];
+    expect(streamArgs.model).toBe(mockModel);
+    expect(streamArgs.system).toContain('StadiumSync AI');
+    expect(streamArgs.system).toContain('MetLife Stadium');
+
+    delete process.env.GEMINI_API_KEY;
+    vi.mocked(streamText).mockClear();
+    mockGoogle.mockClear();
+  });
+
 }, 25000);
+
