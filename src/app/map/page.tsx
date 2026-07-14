@@ -45,6 +45,7 @@ interface SeatingSection {
   accessibility: string;
   capacity: number;
   label: string;
+  level: number;
 }
 
 function MapContent() {
@@ -123,7 +124,8 @@ function MapContent() {
             ? `Direct step-free concourse access, 12 wheelchair companion spaces on deck ${label}.`
             : `Elevator lift access required via Elevator Bank A. Braille signage equipped.`,
           capacity: ring.level === 1 ? 1200 : ring.level === 2 ? 1500 : 2000,
-          label
+          label,
+          level: ring.level
         });
       }
     });
