@@ -12,8 +12,27 @@ export async function POST(req: Request) {
     console.log('Chat API Request Body:', JSON.stringify(body));
     const { messages, venueId } = body;
 
+    // Strict input schema and length validations for security (DoS/Overflow prevention)
+    if (venueId && (typeof venueId !== 'string' || venueId.length > 50)) {
+      return new Response('Invalid request: venueId is malformed', { status: 400 });
+    }
+
     if (!messages || !Array.isArray(messages)) {
       return new Response('Invalid request: messages must be an array', { status: 400 });
+    }
+
+    if (messages.length > 100) {
+      return new Response('Invalid request: conversation history too long', { status: 400 });
+    }
+
+    for (const msg of messages) {
+      if (!msg || typeof msg !== 'object' || typeof msg.role !== 'string') {
+        return new Response('Invalid request: malformed message structure', { status: 400 });
+      }
+      const content = msg.content || '';
+      if (typeof content === 'string' && content.length > 2000) {
+        return new Response('Invalid request: message content exceeds maximum limit', { status: 400 });
+      }
     }
 
     // 1. Fetch Venue Context from PGLite database
